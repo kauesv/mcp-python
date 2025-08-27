@@ -131,7 +131,7 @@ dmypy.json
 # MCP specific
 #logs/
 *.log
-
+anotacoes.txt
 # IDE
 .vscode/
 .idea/
