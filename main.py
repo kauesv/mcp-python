@@ -14,8 +14,7 @@ mcp = FastMCP(
 # Tools
 @mcp.tool(
     name="get_docs",
-    description="Busca a documentação mais recente para uma determinada consulta e biblioteca.",
-    structured_output=True
+    description="Busca a documentação mais recente para uma determinada consulta e biblioteca."
 )
 async def get_docs_tool(query: str, library: str):
     """
