@@ -11,6 +11,15 @@ Um servidor **Model Context Protocol (MCP)** Python que fornece ferramentas para
 - 🐳 **Containerização**: Docker e Docker Compose configurados
 - 📝 **Sistema de Logs**: Logging configurável com rotação de arquivos
 
+## 🔌 Protocolo MCP
+
+Este servidor implementa o **Model Context Protocol (MCP)** padrão, que define como agentes de IA se comunicam com ferramentas externas. O servidor suporta dois modos de transporte:
+
+- **HTTP**: Endpoint único em `http://localhost:8000/` que recebe requisições MCP via JSON-RPC
+- **STDIO**: Comunicação via entrada/saída padrão para integração com agentes MCP
+
+**Importante**: O servidor HTTP **NÃO** expõe endpoints REST tradicionais. Todas as requisições devem seguir o formato MCP padrão com método e parâmetros específicos.
+
 ## 🛠️ Ferramentas Disponíveis
 
 ### `get_docs`
@@ -93,12 +102,152 @@ python main.py --http
 
 O servidor estará disponível em `http://localhost:8000`
 
-### Testar Ferramentas
+### Protocolo MCP HTTP
+O servidor MCP HTTP segue o protocolo MCP padrão e expõe **apenas um endpoint** que recebe todas as requisições MCP.
+
+**Endpoint único:** `http://localhost:8000/`
+
+### Testar Ferramentas (Protocolo MCP)
 ```bash
-# Testar busca de documentação
-curl -X POST "http://localhost:8000/tools/get_docs" \
+# 1. Listar ferramentas disponíveis
+curl -X POST "http://localhost:8000/" \
   -H "Content-Type: application/json" \
-  -d '{"query": "Chroma DB", "library": "langchain"}'
+  -d '{
+    "jsonrpc": "2.0",
+    "id": "1",
+    "method": "tools/list",
+    "params": {}
+  }'
+
+# 2. Executar ferramenta get_docs
+curl -X POST "http://localhost:8000/" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": "2",
+    "method": "tools/call",
+    "params": {
+      "name": "get_docs",
+      "arguments": {
+        "query": "Chroma DB",
+        "library": "langchain"
+      }
+    }
+  }'
+
+# 3. Executar ferramenta text_stats
+curl -X POST "http://localhost:8000/" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": "3",
+    "method": "tools/call",
+    "params": {
+      "name": "text_stats",
+      "arguments": {
+        "text": "Este é um texto de exemplo para análise."
+      }
+    }
+  }'
+
+# 4. Executar ferramenta convert_units
+curl -X POST "http://localhost:8000/" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": "4",
+    "method": "tools/call",
+    "params": {
+      "name": "convert_units",
+      "arguments": {
+        "value": 100,
+        "from_unit": "km",
+        "to_unit": "miles"
+      }
+    }
+  }'
+```
+
+### 4. Uso com Python (httpx)
+```python
+import httpx
+import asyncio
+
+async def test_mcp_server():
+    async with httpx.AsyncClient() as client:
+        # 1. Listar ferramentas disponíveis
+        response = await client.post(
+            "http://localhost:8000/",
+            json={
+                "jsonrpc": "2.0",
+                "id": "1",
+                "method": "tools/list",
+                "params": {}
+            }
+        )
+        print("Ferramentas disponíveis:", response.json())
+        
+        # 2. Executar ferramenta get_docs
+        response = await client.post(
+            "http://localhost:8000/",
+            json={
+                "jsonrpc": "2.0",
+                "id": "2",
+                "method": "tools/call",
+                "params": {
+                    "name": "get_docs",
+                    "arguments": {
+                        "query": "Chroma DB",
+                        "library": "langchain"
+                    }
+                }
+            }
+        )
+        print("Resultado get_docs:", response.json())
+
+# Executar
+asyncio.run(test_mcp_server())
+```
+
+### 5. Uso com JavaScript/Fetch
+```javascript
+// 1. Listar ferramentas disponíveis
+fetch('http://localhost:8000/', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: "1",
+        method: "tools/list",
+        params: {}
+    })
+})
+.then(response => response.json())
+.then(data => console.log('Ferramentas:', data));
+
+// 2. Executar ferramenta get_docs
+fetch('http://localhost:8000/', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: "2",
+        method: "tools/call",
+        params: {
+            name: "get_docs",
+            arguments: {
+                query: "Chroma DB",
+                library: "langchain"
+            }
+        }
+    })
+})
+.then(response => response.json())
+.then(data => console.log('Resultado:', data));
 ```
 
 ## 🔌 Uso com Agentes MCP
