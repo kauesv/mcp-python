@@ -53,7 +53,7 @@ def get_logger(logger_name, folder=None, file_name=None):
     """
     # Se a pasta for fornecida, cria o diretório e ajusta o caminho do arquivo de log
     if folder:
-        log_dir = log_path / folder
+        log_dir = EnvVariables.LOG_PATH / folder
         log_dir.mkdir(parents=True, exist_ok=True)
         if file_name:
             log_file = f"{log_dir}/{file_name}"
