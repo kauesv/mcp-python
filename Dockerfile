@@ -1,34 +1,33 @@
-FROM python:3.11-slim
+FROM python:3.12.9
 
-WORKDIR /mcp
-COPY . /mcp
-
-# Set environment variables
-ENV PYTHONUNBUFFERED=1
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV MCP_LOG_LEVEL=INFO
+WORKDIR /mcp/app
+COPY . /mcp/app
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y \
-    gcc \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        gcc \
+        curl \
+        nano \
+        tzdata && \
+    # Install uv package manager
+    curl -LsSf https://astral.sh/uv/install.sh | sh && \
+    # limpar o cache do apt.
+    rm -rf /var/lib/apt/lists/*
 
-# Install uv package manager
-RUN curl -LsSf https://astral.sh/uv/install.sh | sh
-
-# Copy requirements first for better caching
-COPY requirements.txt .
+# Configura o fuso horário
+RUN ln -snf /usr/share/zoneinfo/America/Sao_Paulo /etc/localtime && \
+    echo "America/Sao_Paulo" > /etc/timezone
 
 # Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir -r /mcp/app/requirements.txt
 
-# Create non-root user for security
-RUN useradd --create-home --shell /bin/bash mcp && \
-    chown -R mcp:mcp /mcp
-
-# Switch to non-root user
-USER mcp
+# Set environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONPATH=/mcp/app \
+    MCP_LOG_LEVEL=INFO
 
 # Default command
 CMD ["python", "main.py", "--http"]

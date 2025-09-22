@@ -1,29 +1,15 @@
 import logging
 import sys
-from logging.handlers import RotatingFileHandler
+from logging.handlers import TimedRotatingFileHandler, RotatingFileHandler
 from datetime import datetime
-from app.settings import VariablesMCPPython
+from settings.env_variables import EnvVariables
 
-
-# Para usar o logger, basta importar o arquivo e usar o logger.
-# from log.log import get_logger
-# logger = get_logger("cli")
-
-# # Exemplo de uso:
-# logger.info("Informação")
-# logger.warning("Aviso")
-# logger.error("Erro")
-# logger.critical("Crítico")
-
-
-# --------------
-#   
-log_path = VariablesMCPPython.log_path
-formatter = VariablesMCPPython.log_format
-default_log_file = VariablesMCPPython.default_log_file
 
 # --------------
 #   Configuração do formato dos logs
+FORMATTER = logging.Formatter("%(asctime)s — %(name)s — %(levelname)s — %(message)s")
+DEFAULT_LOG_FILE = f"{EnvVariables.LOG_PATH}/logs_{datetime.now().strftime('%Y-%m-%d')}.log"
+
 def get_console_handler():
     """
     Configura o handler para saída no console.
@@ -32,7 +18,7 @@ def get_console_handler():
         logging.StreamHandler: Handler configurado para saída no console.
     """
     console_handler = logging.StreamHandler(sys.stdout)
-    console_handler.setFormatter(formatter)
+    console_handler.setFormatter(FORMATTER)
     return console_handler
 
 def get_file_handler(log_file):
@@ -50,7 +36,7 @@ def get_file_handler(log_file):
         maxBytes=10_000_000,  # 10 MB
         backupCount=5
     )
-    file_handler.setFormatter(formatter)
+    file_handler.setFormatter(FORMATTER)
     return file_handler
 
 def get_logger(logger_name, folder=None, file_name=None):
@@ -74,7 +60,7 @@ def get_logger(logger_name, folder=None, file_name=None):
         else:
             log_file = f"{log_dir}/logs_{datetime.now().strftime('%Y-%m-%d')}.log"
     else:
-        log_file = default_log_file
+        log_file = DEFAULT_LOG_FILE
 
     logger = logging.getLogger(logger_name)
     logger.setLevel(logging.DEBUG)

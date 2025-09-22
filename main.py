@@ -1,80 +1,92 @@
+from settings.env_variables import EnvVariables
+from logs.logging import get_logger
+from contextlib import asynccontextmanager
+from collections.abc import AsyncIterator
 from mcp.server.fastmcp import FastMCP
-from app.settings import VariablesMCPPython
-from app.tools.get_docs import get_docs
-from app.tools.text_stats import text_stats
-from app.tools.unit_converter import convert_units
+import sys
 
+
+logger = get_logger("main")
+
+@asynccontextmanager
+async def app_lifespan(server: FastMCP) -> AsyncIterator[None]:
+    """Manage application lifecycle."""
+    
+    # Initialize resources on startup
+    logger.info(f"Starting {EnvVariables.MCP_SERVER_NAME}")
+
+    """
+    Antes do yield: executa o que deve acontecer quando o servidor inicia (exemplo: conectar ao banco, carregar cache, inicializar serviços).
+    """
+    try:
+        yield
+    finally:
+        """
+        Depois do yield (dentro do finally): executa o que deve acontecer quando o servidor encerra (exemplo: fechar conexões, limpar arquivos temporários).
+        """
+
+        # Cleanup on shutdown
+        logger.info(f"Shutting down {EnvVariables.MCP_SERVER_NAME}")
 
 # MCP
 mcp = FastMCP(
-    name=VariablesMCPPython.server_name,
-    stateless_http=VariablesMCPPython.stateless_http,
-    host=VariablesMCPPython.host,
-    port=VariablesMCPPython.port
+    name=EnvVariables.MCP_SERVER_NAME,
+    stateless_http=True,  # True para servidor http, para os outros sera ignorado
+    lifespan=app_lifespan,
+    host=EnvVariables.MCP_HOST,
+    port=EnvVariables.MCP_PORT
 )
 
-# Tools
-@mcp.tool(
-    name="get_docs",
-    description="Busca a documentação mais recente para uma determinada consulta e biblioteca."
-)
-async def get_docs_tool(query: str, library: str):
+# Add an addition tool
+@mcp.tool()
+def add(a: int, b: int) -> int:
+    """Add two numbers together.
+    
+    Args:
+        a: First number to add
+        b: Second number to add
+        
+    Returns:
+        The sum of a and b
+        
+    Example:
+        >>> add(5, 3)
+        8
     """
-    Busca a documentação mais recente para uma determinada consulta e biblioteca.
-    Suporta langchain, openai e llama-index.
-
-    Argumentos:
-        query: A consulta a ser pesquisada (ex: "Chroma DB")
-        library: A biblioteca na qual pesquisar (ex: "langchain")
-
-    Retorna:
-        Texto extraído da documentação
-    """
-    return await get_docs(query, library)
+    return a + b
 
 
-@mcp.tool(
-    name="text_stats",
-    description="Calcula estatísticas básicas de um texto fornecido."
-)
-async def text_stats_tool(text: str):
-    """
-    Calcula estatísticas básicas de um texto fornecido.
-
-    Argumentos:
-        text: O texto para analisar
-
-    Retorna:
-        Dicionário com estatísticas do texto (contagem de caracteres, palavras, linhas, etc.)
-    """
-    return await text_stats(text)
+# Add a dynamic greeting resource
+@mcp.resource("greeting://{name}")
+def get_greeting(name: str) -> str:
+    """Get a personalized greeting"""
+    return f"Hello, {name}!"
 
 
-@mcp.tool(
-    name="convert_units",
-    description="Converte valores entre diferentes unidades de medida."
-)
-async def convert_units_tool(value: float, from_unit: str, to_unit: str):
-    """
-    Converte valores entre diferentes unidades de medida.
+# Add a prompt
+@mcp.prompt()
+def greet_user(name: str, style: str = "friendly") -> str:
+    """Generate a greeting prompt"""
+    styles = {
+        "friendly": "Please write a warm, friendly greeting",
+        "formal": "Please write a formal, professional greeting",
+        "casual": "Please write a casual, relaxed greeting",
+    }
 
-    Argumentos:
-        value: O valor numérico para converter
-        from_unit: A unidade de origem (ex: "km", "miles", "kg", "lbs")
-        to_unit: A unidade de destino (ex: "m", "km", "g", "oz")
+    return f"{styles.get(style, styles['friendly'])} for someone named {name}."
 
-    Retorna:
-        Dicionário com o valor convertido e informações sobre a conversão
-    """
-    return await convert_units(value, from_unit, to_unit)
 
-# Run
 if __name__ == "__main__":
-    import sys
-
-    if len(sys.argv) > 1 and sys.argv[1] == "--http":
-        print(f"🚀 Iniciando servidor MCP HTTP em {VariablesMCPPython.host}:{VariablesMCPPython.port}")
-        mcp.run(transport="streamable-http")
-    else:
-        print("🔌 Iniciando servidor MCP STDIO")
-        mcp.run(transport="stdio")
+    try:
+        if sys.argv[1] == "--http":
+            logger.info(f"Starting MCP HTTP server on {EnvVariables.MCP_HOST}:{EnvVariables.MCP_PORT}")
+            mcp.run(transport="streamable-http")
+        else:
+            logger.info("Starting MCP STDIO server")
+            mcp.run(transport="stdio")
+    except KeyboardInterrupt:
+        logger.info("Server interrupted by user")
+        sys.exit(0)
+    except Exception as e:
+        logger.error(f"Error starting server: {e}")
+        sys.exit(1)

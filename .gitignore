@@ -6,6 +6,9 @@ __pycache__/
 # C extensions
 *.so
 
+# Documentação
+docs/
+
 # Distribution / packaging
 .Python
 build/
@@ -142,6 +145,3 @@ anotacoes.txt
 # OS
 .DS_Store
 Thumbs.db
-
-# Docker
-.dockerignore
