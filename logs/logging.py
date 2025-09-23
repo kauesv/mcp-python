@@ -2,7 +2,7 @@ import logging
 import sys
 from logging.handlers import TimedRotatingFileHandler, RotatingFileHandler
 from datetime import datetime
-from settings.env_variables import EnvVariables
+from config.env_variables import EnvVariables
 
 
 # --------------
