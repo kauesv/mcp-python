@@ -18,6 +18,7 @@ class EnvVariables:
     )
     MCP_HOST = environ.get('MCP_HOST', "localhost")
     MCP_PORT = environ.get('MCP_PORT', 2000)
+    MCP_API_KEY = environ.get('MCP_API_KEY')
 
     #   Diretórios
     BASE_PATH = environ.get('BASE_PATH')

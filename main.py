@@ -3,10 +3,46 @@ from logs.logging import get_logger
 from contextlib import asynccontextmanager
 from collections.abc import AsyncIterator
 from mcp.server.fastmcp import FastMCP
+from mcp.server.auth.provider import AccessToken, TokenVerifier
+from mcp.server.auth.settings import AuthSettings
+from pydantic import AnyHttpUrl
 import sys
 
 
 logger = get_logger("main")
+
+class StaticTokenVerifier(TokenVerifier):
+    """Simple token verifier that checks against a static API key."""
+    
+    def __init__(self, token: str, client_id: str = "static-client", scopes: list[str] | None = None):
+        """Initialize the static token verifier.
+        
+        Args:
+            token: The valid API key token
+            client_id: Client identifier for the token
+            scopes: List of scopes granted to this token
+        """
+        self.valid_token = token
+        self.client_id = client_id
+        self.scopes = scopes or ["read", "write"]
+    
+    async def verify_token(self, token: str) -> AccessToken | None:
+        """Verify the provided token against the static API key.
+        
+        Args:
+            token: The token to verify
+            
+        Returns:
+            AccessToken if valid, None otherwise
+        """
+        if token == self.valid_token:
+            return AccessToken(
+                token=token,
+                client_id=self.client_id,
+                scopes=self.scopes,
+                expires_at=None  # No expiration for static tokens
+            )
+        return None
 
 @asynccontextmanager
 async def app_lifespan(server: FastMCP) -> AsyncIterator[None]:
@@ -28,13 +64,32 @@ async def app_lifespan(server: FastMCP) -> AsyncIterator[None]:
         # Cleanup on shutdown
         logger.info(f"Shutting down {EnvVariables.MCP_SERVER_NAME}")
 
+# Create token verifier if API key is configured
+token_verifier = None
+auth_settings = None
+
+token_verifier = StaticTokenVerifier(
+    token=EnvVariables.MCP_API_KEY,
+    client_id="mcp-client",
+    scopes=["mcp:read", "mcp:write"]
+)
+
+# Configure auth settings
+auth_settings = AuthSettings(
+    issuer_url=AnyHttpUrl(f"http://{EnvVariables.MCP_HOST}:{EnvVariables.MCP_PORT}"),
+    resource_server_url=AnyHttpUrl(f"http://{EnvVariables.MCP_HOST}:{EnvVariables.MCP_PORT}"),
+    required_scopes=["mcp:read"]
+)
+
 # MCP
 mcp = FastMCP(
     name=EnvVariables.MCP_SERVER_NAME,
     stateless_http=True,  # True para servidor http, para os outros sera ignorado
     lifespan=app_lifespan,
     host=EnvVariables.MCP_HOST,
-    port=EnvVariables.MCP_PORT
+    port=EnvVariables.MCP_PORT,
+    auth=auth_settings,
+    token_verifier=token_verifier
 )
 
 # Add an addition tool
