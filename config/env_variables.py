@@ -23,3 +23,12 @@ class EnvVariables:
     #   Diretórios
     BASE_PATH = environ.get('BASE_PATH')
     LOG_PATH = environ.get('LOG_PATH')
+    
+    #   Connections databases
+    MONGODB_URI = environ.get('MONGODB_URI')
+
+    #   Databases
+    MONGODB_DATABASE_LOG = environ.get('MONGODB_DATABASE_LOG')
+
+    #   Collections/Tables
+    MONGODB_COLLECTION = environ.get('MONGODB_COLLECTION')

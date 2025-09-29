@@ -34,12 +34,13 @@ def setup_server():
     return mcp
 
 
+# Create the MCP server instance as a global variable
+# This is required for the MCP dev command to find the server object
+mcp = setup_server()
+
 def main():
     """Main entry point for the MCP server."""
     try:
-        # Setup the server
-        mcp = setup_server()
-        
         # Determine transport mode
         if len(sys.argv) > 1 and sys.argv[1] == "--http":
             logger.info(f"Starting MCP HTTP server on {EnvVariables.MCP_HOST}:{EnvVariables.MCP_PORT}")
