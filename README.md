@@ -52,17 +52,25 @@ pip install -r requirements.txt
 
 ### Executando o Servidor
 
-**Opção 1: Via Docker (Recomendado)**
+**Opção 1: Via Docker**
 ```bash
 docker-compose up -d
 ```
 
-**Opção 2: Localmente**
+**Opção 2: Localmente (Recomendado)**
 ```bash
 python main.py --http
 ```
 
 O servidor estará disponível em `http://localhost:2000`
+
+### Testando o Servidor
+
+Para rodar o servidor no modo de desenvolvimento utilizando [uvicorn](https://www.uvicorn.org/):
+
+```bash
+uv run mcp dev main.py
+```
 
 ## 🔧 Ferramentas Disponíveis
 
