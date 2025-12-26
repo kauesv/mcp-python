@@ -28,7 +28,7 @@ class EnvVariables:
     MONGODB_URI = environ.get('MONGODB_URI')
 
     #   Databases
-    MONGODB_DATABASE_LOG = environ.get('MONGODB_DATABASE_LOG')
+    MONGODB_DATABASE = environ.get('MONGODB_DATABASE')
 
     #   Collections/Tables
-    MONGODB_COLLECTION = environ.get('MONGODB_COLLECTION')
+    MONGODB_COLLECTION_AGENTS_LOGS = environ.get('MONGODB_COLLECTION_AGENTS_LOGS')

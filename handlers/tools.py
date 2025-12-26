@@ -1,5 +1,5 @@
 from logs.logging import get_logger
-from logs.ai_agent import ai_agent_logger
+from logs.agents import agents_logger
 from datetime import datetime
 from typing import Optional, Dict, Any, List
 
@@ -33,7 +33,7 @@ def register_tools(mcp):
         return result
     
     @mcp.tool()
-    def log_ai_agent_interaction(
+    def log_agents_interaction(
         project_name: str,
         agent_name: str,
         interaction_type: str,
@@ -57,7 +57,7 @@ def register_tools(mcp):
             bool: True if log was successful, False otherwise
             
         Example:
-            >>> log_ai_agent_interaction(
+            >>> log_agents_interaction(
             ...     project_name="Customer Support",
             ...     agent_name="Customer Support Bot",
             ...     interaction_type="chat",
@@ -69,7 +69,7 @@ def register_tools(mcp):
             True
         """
         try:            
-            success = ai_agent_logger.log_agent_interaction(
+            success = agents_logger.log_agent_interaction(
                 project_name=project_name,
                 agent_name=agent_name,
                 interaction_type=interaction_type,
@@ -91,7 +91,7 @@ def register_tools(mcp):
             return False
 
     @mcp.tool()
-    def get_ai_agent_logs(
+    def get_agents_logs(
         agent_name: Optional[str] = None,
         session_id: Optional[str] = None,
         start_date: Optional[str] = None,
@@ -111,7 +111,7 @@ def register_tools(mcp):
             List[Dict[str, Any]]: List of log entries
             
         Example:
-            >>> get_ai_agent_logs(
+            >>> get_agents_logs(
             ...     agent_name="agent_001",
             ...     start_date="2024-01-01",
             ...     end_date="2024-01-31",
@@ -138,7 +138,7 @@ def register_tools(mcp):
                     logger.error(f"Invalid end_date format: {end_date}. Use YYYY-MM-DD format.")
                     return []
             
-            logs = ai_agent_logger.get_agent_logs(
+            logs = agents_logger.get_agent_logs(
                 agent_name=agent_name,
                 session_id=session_id,
                 start_date=start_dt,
@@ -154,7 +154,7 @@ def register_tools(mcp):
             return []
     
     @mcp.tool()
-    def get_ai_agent_statistics(
+    def get_agents_statistics(
         agent_name: str,
         start_date: Optional[str] = None,
         end_date: Optional[str] = None
@@ -170,7 +170,7 @@ def register_tools(mcp):
             Dict[str, Any]: Agent statistics including interaction counts, task statuses, etc.
             
         Example:
-            >>> get_ai_agent_statistics(
+            >>> get_agents_statistics(
             ...     agent_name="agent_001",
             ...     start_date="2024-01-01",
             ...     end_date="2024-01-31"
@@ -202,7 +202,7 @@ def register_tools(mcp):
                     logger.error(f"Invalid end_date format: {end_date}. Use YYYY-MM-DD format.")
                     return {}
             
-            statistics = ai_agent_logger.get_agent_statistics(
+            statistics = agents_logger.get_agent_statistics(
                 agent_name=agent_name,
                 start_date=start_dt,
                 end_date=end_dt

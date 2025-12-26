@@ -1,4 +1,4 @@
-from database.repository.fluxo_husky import FluxoHuskyRepository
+from database.repository.agents_logs import AgentsLogsRepository
 from config.env_variables import EnvVariables
 from database.connection.mongodb import MongoDBConnection
 
@@ -9,6 +9,6 @@ class ManagerMongoDB:
    mongo_client = MongoDBConnection()
    mongo_client = mongo_client.connect()
 
-   mongo_database_log = mongo_client[EnvVariables.MONGODB_DATABASE_LOG]
+   mongo_database = mongo_client[EnvVariables.MONGODB_DATABASE]
 
-   fluxo_husky_repository = FluxoHuskyRepository(db=mongo_database_log)
+   agents_logs_repository = AgentsLogsRepository(db=mongo_database)
