@@ -144,3 +144,13 @@ def minha_nova_ferramenta(param1: str) -> str:
     # Implementação da ferramenta
     return resultado
 ```
+
+## Contato
+
+Para mais informações ou para discutir qualquer um dos repositórios, sinta-se à vontade para entrar em contato:
+
+- **Email:** [kauesousavieira534@gmail.com](mailto:kauesousavieira534@gmail.com)
+- **LinkedIn:** [LinkedIn](https://www.linkedin.com/in/kaue-sousa-vieira/)
+
+---
+Obrigado por visitar meu repositório!
